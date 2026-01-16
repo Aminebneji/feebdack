@@ -87,7 +87,7 @@ export default function LandingPage() {
                                             type="text"
                                             placeholder="Votre nom"
                                             className="w-full px-3 py-2.5 rounded-lg border border-zinc-200 text-sm outline-none cursor-default"
-                                            defaultValue="Amine B."
+                                            defaultValue="John Doe"
                                             disabled
                                             readOnly
                                         />
@@ -172,7 +172,7 @@ export default function LandingPage() {
                     </div>
                     <div className="opacity-40 grayscale group-hover:grayscale-0 transition-all">
                         <span className="font-bold text-lg tracking-tight italic">Développé par {" "}</span>
-                        <Link href="https://aminebneji.github.io/ReactCv2k25" target="_blank" className="font-black text-lg tracking-tight italic">Amine</Link>
+                        <Link href="https://aminebneji.github.io/ReactCv2k25" target="_blank" className="font-black text-lg italic hover:text-primary transition-colors">Amine</Link>
                     </div>
                 </div>
             </footer>

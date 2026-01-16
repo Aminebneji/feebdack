@@ -65,7 +65,7 @@ export default function RegisterPage() {
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             className="pl-12 h-14 bg-zinc-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl font-bold transition-all shadow-inner "
-                                            placeholder="Amine B."
+                                            placeholder="John Doe"
                                             required
                                         />
                                     </div>
@@ -80,7 +80,7 @@ export default function RegisterPage() {
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             className="pl-12 h-14 bg-zinc-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl font-bold transition-all shadow-inner z-20"
-                                            placeholder="amine@feebdack.com"
+                                            placeholder="john.doe@example.com"
                                             required
                                         />
                                     </div>
