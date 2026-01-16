@@ -146,7 +146,7 @@
     </button>
     <div id="feebdack-modal">
       <div id="feebdack-form-view">
-        <div class="feebdack-header">
+        <div class="feebdack-header" href="https://feebdack-phi.vercel.app/">
           <img src="${ASSETS_URL}/assets/bdicon.png" style="width: 32px; height: 32px; object-fit: contain;">
           <div>
             <h3 style="margin-left: 15px;">Laissez un feedback</h3>
