@@ -2,5 +2,29 @@
   "buildCommand": "npx prisma generate && npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["cdg1"]
+  "regions": ["cdg1"],
+  "git": {
+    "deploymentEnabled": {
+      "production": true,
+      "main": false,
+      "develop": false
+    }
+  },
+  "headers": [
+    {
+      "source": "/test-widget.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/test-widget.html",
+      "destination": "/404"
+    }
+  ]
 }
