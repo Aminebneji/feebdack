@@ -3,6 +3,7 @@
 import { Plus, Globe, Key, Trash2, ArrowRight, Loader2, ExternalLink } from "lucide-react";
 import { useSites } from "@/context/SitesContext";
 import { useToast } from "@/context/ToastContext";
+import { useCreateModal } from "@/context/CreateModalContext";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -11,6 +12,7 @@ export default function DashboardIndex() {
     const { sites, loading, deleteSite } = useSites();
     const { data: session } = useSession();
     const { loading: toastLoading, dismiss } = useToast();
+    const { setIsCreateModalOpen } = useCreateModal();
 
     const handleDelete = async (id: string, event: React.MouseEvent) => {
         event.preventDefault();
@@ -43,10 +45,6 @@ export default function DashboardIndex() {
                         Bienvenue, <span className="text-primary">{session?.user?.name || "capitaine"}</span>.
                     </p>
                 </div>
-                <Button className="h-11 px-6 rounded-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-                    <Plus className="mr-2 size-4" />
-                    Nouveau Projet
-                </Button>
             </div>
 
             {sites.length === 0 ? (
@@ -58,7 +56,8 @@ export default function DashboardIndex() {
                         <h2 className="text-xl font-bold">Prêt pour la récolte ?</h2>
                         <p className="text-sm text-muted-foreground max-w-xs mx-auto">Ajoutez votre site pour commencer à collecter des feedbacks.</p>
                     </div>
-                    <Button variant="outline" size="sm" className="rounded-full px-6 font-bold">
+                    <Button variant="outline" size="sm" className="rounded-full px-6 font-bold"
+                        onClick={() => setIsCreateModalOpen(true)}>
                         Démarrer
                     </Button>
                 </div>

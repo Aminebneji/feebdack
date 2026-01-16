@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { useSession } from "next-auth/react";
 import CreateSiteModal from "@/components/CreateSiteModal";
 import { Sidebar } from "@/components/Sidebar";
 import MobileGuard from "@/components/MobileGuard";
 import { SitesProvider, useSites } from "@/context/SitesContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CreateModalProvider, useCreateModal } from "@/context/CreateModalContext";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
     const { data: session } = useSession();
     const { sites } = useSites();
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const { isCreateModalOpen, setIsCreateModalOpen } = useCreateModal();
 
     return (
         <div className="min-h-screen bg-[#fafafa]">
@@ -43,7 +42,9 @@ export default function DashboardLayout({
 }) {
     return (
         <SitesProvider>
-            <DashboardContent>{children}</DashboardContent>
+            <CreateModalProvider>
+                <DashboardContent>{children}</DashboardContent>
+            </CreateModalProvider>
         </SitesProvider>
     );
 }
