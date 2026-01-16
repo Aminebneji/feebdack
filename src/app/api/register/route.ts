@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { registerSchema } from "@/lib/validation";
 import { handleError, badRequest } from "@/lib/errors";
-import { validateEmailDomain, isDisposableEmail } from "@/lib/email-validator";
+import { validateEmailDomain, isDisposableEmail, detectEmailTypo } from "@/lib/email-validator";
 
 const validateEmailUniqueness = async (email: string) => {
     const existingUser = await prisma.user.findUnique({
@@ -31,6 +31,15 @@ export async function POST(req: Request) {
 
         // Normaliser l'email (minuscules, sans espaces)
         const email = normalizeEmail(rawEmail);
+
+        // Vérifier les typos courants (ex: gail.com au lieu de gmail.com)
+        const typoCheck = detectEmailTypo(email);
+        if (typoCheck.hasTypo) {
+            return NextResponse.json(
+                { error: `L'adresse email semble incorrecte. Vouliez-vous dire "${typoCheck.suggestion}" ?` },
+                { status: 400 }
+            );
+        }
 
         // Vérifier que le domaine de l'email existe (DNS MX records)
         const isDomainValid = await validateEmailDomain(email);
