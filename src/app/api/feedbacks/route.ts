@@ -7,8 +7,9 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { siteKey, name, feature, content } = body;
+        const origin = req.headers.get("origin");
 
-        const feedback = await feedbackService.createFeedback(siteKey, { name, feature, content });
+        const feedback = await feedbackService.createFeedback(siteKey, { name, feature, content }, origin);
         return NextResponse.json(feedback);
     } catch (error) {
         return handleError(error);

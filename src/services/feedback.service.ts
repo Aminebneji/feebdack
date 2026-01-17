@@ -52,10 +52,33 @@ class FeedbackService {
         }
     }
 
+    // Vérifie que l'origine de la requête correspond à l'URL du site
+    private verifyOrigin(siteUrl: string, origin: string | null) {
+        if (!origin) {
+            throw unauthorized("Origin header missing");
+        }
+
+        try {
+            // On extrait le hostname pour comparer (ex: localhost, example.com)
+            // L'URL du site est validée comme une URL complète par zod
+            const siteHostname = new URL(siteUrl).hostname;
+            const originHostname = new URL(origin).hostname;
+
+            if (siteHostname !== originHostname) {
+                throw unauthorized(`Unauthorized origin: ${originHostname}`);
+            }
+        } catch (error) {
+            throw badRequest("Invalid URL or Origin header");
+        }
+    }
+
     // Crée un nouveau feedback
-    async createFeedback(siteKey: string, data: { name: string; feature: string; content: string }) {
+    async createFeedback(siteKey: string, data: { name: string; feature: string; content: string }, origin: string | null) {
         this.validateFeedbackData(siteKey, data);
         const site = await this.getSiteBySiteKeyOrThrow(siteKey);
+
+        // Vérification de l'origine pour éviter le feedback spoofing
+        this.verifyOrigin(site.url, origin);
 
         const feedback = await prisma.feedback.create({
             data: {
