@@ -33,6 +33,9 @@
 
   // Inject Styles
   const styles = `
+    :host {
+      all: initial;
+    }
     #feebdack-widget-container {
       position: fixed;
       bottom: 24px;
@@ -93,32 +96,40 @@
     .feebdack-header a:hover {
       opacity: 0.8;
     }
-    .feebdack-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
-    .feebdack-header p { margin: 4px 0 0; font-size: 12px; opacity: 0.8; }
-    .feebdack-body { padding: 20px; }
+    .feebdack-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: white !important; }
+    .feebdack-header p { margin: 4px 0 0; font-size: 12px; opacity: 0.8; color: white !important; }
+    .feebdack-body { padding: 20px; background: white; }
     .feebdack-field { margin-bottom: 16px; }
-    .feebdack-field label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+    .feebdack-field label { display: block; font-size: 12px; font-weight: 600; color: #64748b !important; margin-bottom: 6px; text-transform: uppercase; }
     .feebdack-input {
       width: 100%;
       padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
+      background-color: white !important;
+      color: #0f172a !important;
       font-size: 14px;
       outline: none;
       transition: border-color 0.2s;
       box-sizing: border-box;
+      font-family: inherit;
+    }
+    .feebdack-input::placeholder {
+      color: #94a3b8 !important;
+      opacity: 1;
     }
     .feebdack-input:focus { border-color: #164C3A; }
     .feebdack-submit {
       width: 100%;
       padding: 12px;
       background: #164C3A;
-      color: white;
+      color: white !important;
       border: none;
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.2s;
+      font-family: inherit;
     }
     .feebdack-submit:hover { background: #0d2e23; }
     .feebdack-submit:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -126,12 +137,15 @@
       display: none;
       text-align: center;
       padding: 40px 20px;
+      background: white;
     }
+    .feebdack-success h4 { margin: 0 0 8px; color: #0f172a !important; }
+    .feebdack-success p { margin: 0; font-size: 14px; color: #64748b !important; }
     .feebdack-success-icon {
       width: 48px;
       height: 48px;
       background: #dcfce7;
-      color: #166534;
+      color: #166534 !important;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -141,14 +155,19 @@
     }
   `;
 
+  // Create Container with Shadow DOM
+  const container = document.createElement('div');
+  container.id = 'feebdack-widget-root';
+  const shadow = container.attachShadow({ mode: 'open' });
+
+  // Inject Styles into Shadow DOM
   const styleSheet = document.createElement("style");
   styleSheet.innerText = styles;
-  document.head.appendChild(styleSheet);
+  shadow.appendChild(styleSheet);
 
-  // Create Container
-  const container = document.createElement('div');
-  container.id = 'feebdack-widget-container';
-  container.innerHTML = `
+  const widgetContent = document.createElement('div');
+  widgetContent.id = 'feebdack-widget-container';
+  widgetContent.innerHTML = `
     <button id="feebdack-button">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
     </button>
@@ -180,19 +199,20 @@
       </div>
       <div id="feebdack-success-view" class="feebdack-success">
         <div class="feebdack-success-icon">✓</div>
-        <h4 style="margin: 0 0 8px; color: #0f172a;">Merci !</h4>
-        <p style="margin: 0; font-size: 14px; color: #64748b;">Votre feedback a bien été reçu.</p>
+        <h4>Merci !</h4>
+        <p>Votre feedback a bien été reçu.</p>
       </div>
     </div>
   `;
+  shadow.appendChild(widgetContent);
   document.body.appendChild(container);
 
-  // Logic
-  const button = document.getElementById('feebdack-button');
-  const modal = document.getElementById('feebdack-modal');
-  const submitBtn = document.getElementById('feebdack-submit-btn');
-  const formView = document.getElementById('feebdack-form-view');
-  const successView = document.getElementById('feebdack-success-view');
+  // Logic - Query elements from Shadow Root
+  const button = shadow.getElementById('feebdack-button');
+  const modal = shadow.getElementById('feebdack-modal');
+  const submitBtn = shadow.getElementById('feebdack-submit-btn');
+  const formView = shadow.getElementById('feebdack-form-view');
+  const successView = shadow.getElementById('feebdack-success-view');
 
   button.addEventListener('click', () => {
     const isVisible = modal.style.display === 'flex';
@@ -204,9 +224,9 @@
   });
 
   submitBtn.addEventListener('click', async () => {
-    const name = document.getElementById('feebdack-name').value;
-    const feature = document.getElementById('feebdack-feature').value;
-    const feedback = document.getElementById('feebdack-content').value;
+    const name = shadow.getElementById('feebdack-name').value;
+    const feature = shadow.getElementById('feebdack-feature').value;
+    const feedback = shadow.getElementById('feebdack-content').value;
 
     if (!name || !feature || !feedback) {
       alert('Veuillez remplir tous les champs');
