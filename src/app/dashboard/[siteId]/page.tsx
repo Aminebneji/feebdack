@@ -10,6 +10,7 @@ import { useSites } from "@/context/SitesContext";
 import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/button";
 import { classname } from "@/lib/utils";
+import { eventEmitter, EVENTS } from "@/lib/events";
 
 interface Feedback {
     id: string;
@@ -54,9 +55,17 @@ export default function SiteDashboard() {
         if (shouldFetch) fetchFeedbacks();
     }, [site, fetchFeedbacks]);
 
+    useEffect(() => {
+        const off = eventEmitter.on(EVENTS.FEEDBACK_CHANGED, () => {
+            fetchFeedbacks();
+        });
+        return () => off();
+    }, [fetchFeedbacks]);
+
     const handleStatusUpdateSuccess = (id: string, newStatus: string) => {
         setFeedbacks(f => f.map(x => x.id === id ? { ...x, status: newStatus } : x));
         success("Statut mis à jour");
+        eventEmitter.emit(EVENTS.FEEDBACK_CHANGED);
     };
 
     const updateFeedbackStatus = async (id: string, newStatus: string) => {
@@ -77,6 +86,7 @@ export default function SiteDashboard() {
     const handleDeleteSuccess = (id: string) => {
         setFeedbacks(f => f.filter(x => x.id !== id));
         success("Feedback supprimé");
+        eventEmitter.emit(EVENTS.FEEDBACK_CHANGED);
     };
 
     const confirmDelete = () => confirm("Supprimer ce feedback ?");

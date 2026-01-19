@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { useToast } from "./ToastContext";
+import { eventEmitter, EVENTS } from "@/lib/events";
 
 interface Site {
     id: string;
@@ -51,10 +52,12 @@ export function SitesProvider({ children }: { children: React.ReactNode }) {
 
     const addSite = useCallback((site: Site) => {
         setSites((prev) => [site, ...prev]);
+        eventEmitter.emit(EVENTS.SITE_CHANGED);
     }, []);
 
     const removeSite = useCallback((siteId: string) => {
         setSites((prev) => prev.filter((s) => s.id !== siteId));
+        eventEmitter.emit(EVENTS.SITE_CHANGED);
     }, []);
 
     const updateSite = useCallback((site: Site) => {

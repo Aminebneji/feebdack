@@ -85,6 +85,14 @@
       align-items: center;
       gap: 12px;
     }
+    .feebdack-header a {
+      display: flex;
+      align-items: center;
+      transition: opacity 0.2s ease;
+    }
+    .feebdack-header a:hover {
+      opacity: 0.8;
+    }
     .feebdack-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
     .feebdack-header p { margin: 4px 0 0; font-size: 12px; opacity: 0.8; }
     .feebdack-body { padding: 20px; }
@@ -146,8 +154,10 @@
     </button>
     <div id="feebdack-modal">
       <div id="feebdack-form-view">
-        <div class="feebdack-header" href="https://feebdack-phi.vercel.app/">
-          <img src="${ASSETS_URL}/assets/bdicon.png" style="width: 32px; height: 32px; object-fit: contain;">
+        <div class="feebdack-header">
+          <a target="_blank" href="https://feebdack-phi.vercel.app/" title="Visiter Feebdack">
+            <img src="${ASSETS_URL}/assets/bdicon.png" style="width: 32px; height: 32px; object-fit: contain; cursor: pointer;">
+          </a>
           <div>
             <h3 style="margin-left: 15px;">Laissez un feedback</h3>
           </div>

@@ -9,7 +9,7 @@ export default function MobileGuard() {
 
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth < 1088) {
+            if (window.innerWidth < 1088 && pathname !== "/") {
                 const encodedReturnUrl = encodeURIComponent(pathname);
                 router.push(`/mobile-restricted?returnUrl=${encodedReturnUrl}`);
             }

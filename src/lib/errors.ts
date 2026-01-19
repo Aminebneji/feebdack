@@ -42,3 +42,7 @@ export function badRequest(message: string = "Bad request"): NextResponse {
 export function notFound(message: string = "Not found"): NextResponse {
     return NextResponse.json({ error: message }, { status: 404 });
 }
+
+export function conflict(message: string = "Conflict"): NextResponse {
+    return NextResponse.json({ error: message }, { status: 409 });
+}

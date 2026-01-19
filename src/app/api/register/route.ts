@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { registerSchema } from "@/lib/validation";
-import { handleError, badRequest } from "@/lib/errors";
+import { handleError, badRequest, conflict } from "@/lib/errors";
 import { validateEmailDomain, isDisposableEmail, detectEmailTypo } from "@/lib/email-validator";
 
 const validateEmailUniqueness = async (email: string) => {
@@ -35,36 +35,24 @@ export async function POST(req: Request) {
         // Vérifier les typos courants (ex: gail.com au lieu de gmail.com)
         const typoCheck = detectEmailTypo(email);
         if (typoCheck.hasTypo) {
-            return NextResponse.json(
-                { error: `L'adresse email semble incorrecte. Vouliez-vous dire "${typoCheck.suggestion}" ?` },
-                { status: 400 }
-            );
+            return badRequest(`L'adresse email semble incorrecte. Vouliez-vous dire "${typoCheck.suggestion}" ?`);
         }
 
         // Vérifier que le domaine de l'email existe (DNS MX records)
         const isDomainValid = await validateEmailDomain(email);
         if (!isDomainValid) {
-            return NextResponse.json(
-                { error: "L'adresse email n'est pas valide. Veuillez utiliser une adresse email réelle." },
-                { status: 400 }
-            );
+            return badRequest("L'adresse email n'est pas valide. Veuillez utiliser une adresse email réelle.");
         }
 
         // Bloquer les emails jetables/temporaires
         if (isDisposableEmail(email)) {
-            return NextResponse.json(
-                { error: "Les adresses email temporaires ne sont pas autorisées." },
-                { status: 400 }
-            );
+            return badRequest("Les adresses email temporaires ne sont pas autorisées.");
         }
 
         // Vérifier l'unicité de l'email
         const isEmailAvailable = await validateEmailUniqueness(email);
         if (!isEmailAvailable) {
-            return NextResponse.json(
-                { error: "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email." },
-                { status: 409 } // 409 Conflict
-            );
+            return conflict("Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.");
         }
 
         // Hash password avec un salt fort
@@ -90,10 +78,7 @@ export async function POST(req: Request) {
     } catch (error) {
         // Gestion spécifique de l'erreur Prisma pour email unique
         if (error instanceof Error && error.message.includes('Unique constraint')) {
-            return NextResponse.json(
-                { error: "Cet email est déjà utilisé." },
-                { status: 409 }
-            );
+            return conflict("Cet email est déjà utilisé.");
         }
         return handleError(error);
     }

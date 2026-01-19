@@ -26,8 +26,8 @@
 
 ### Prérequis
 
-- Node.js 18+ 
-- PostgreSQL 14+
+- Node.js 
+- PostgreSQL 
 - npm ou yarn
 
 ### Étapes
@@ -98,7 +98,7 @@ Vos utilisateurs peuvent maintenant cliquer sur le widget flottant pour laisser 
 
 ## 👨‍💻 Auteur
 
-**Amine Bneji**
+**Amine Ben Neji**
 
 [aminebneji.github.io](https://aminebneji.github.io/ReactCv2k25)
 
