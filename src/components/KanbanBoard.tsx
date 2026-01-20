@@ -92,10 +92,16 @@ export function KanbanBoard({ feedbacks, onStatusChange, onDelete, onOpenFeedbac
                 >
                     <div className="flex items-center justify-between mb-6 px-1">
                         <div className="flex items-center gap-2.5">
-                            <h3 className="text-[10px] font-black italic uppercase tracking-[0.2em] text-primary/40">
+                            <h3 className={`text-[10px] font-black italic uppercase tracking-[0.2em] ${column.id === "En cours" ? "text-orange-500" :
+                                column.id === "Terminé" ? "text-green-600" :
+                                    "text-primary/40"
+                                }`}>
                                 {column.title}
                             </h3>
-                            <div className="flex items-center justify-center px-2 py-0.5 rounded-lg bg-white border border-zinc-200 text-[10px] font-black text-primary shadow-sm">
+                            <div className={`flex items-center justify-center px-2 py-0.5 rounded-lg border text-[10px] font-black shadow-sm ${column.id === "En cours" ? "bg-orange-50 border-orange-100 text-orange-600" :
+                                column.id === "Terminé" ? "bg-green-50 border-green-100 text-green-600" :
+                                    "bg-white border-zinc-200 text-primary"
+                                }`}>
                                 {feedbacks.filter((f) => f.status === column.id).length}
                             </div>
                         </div>

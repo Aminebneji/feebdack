@@ -41,7 +41,7 @@ export function FeedbackCard({ feedback, onStatusChange, onDelete }: FeedbackCar
                     </button>
                 </div>
 
-                <p className="text-sm leading-relaxed text-zinc-700 font-bold italic">
+                <p className="text-sm leading-relaxed text-zinc-700 font-bold italic line-clamp-3">
                     &ldquo;{feedback.content}&rdquo;
                 </p>
 

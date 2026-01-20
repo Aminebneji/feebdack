@@ -10,7 +10,7 @@ datasource db {
 model Site {
   id        String     @id @default(cuid())
   name      String
-  url       String
+  url       String     @unique
   siteKey   String     @unique
   userId    String
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)

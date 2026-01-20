@@ -47,7 +47,7 @@ export default function RootLayout({
         <script
           src="https://feebdack-phi.vercel.app/widget.js"
           async
-          data-site-key="sk_567f9157affd364c32d7f2188cc99207"
+          data-site-key="sk_f756c9e92105135ca69f90ba4bb69d55"
         ></script>
       </body>
     </html>

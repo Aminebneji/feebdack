@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createSiteSchema, siteNameSchema, urlSchema } from "@/lib/validation";
-import { badRequest, forbidden, notFound } from "@/lib/errors";
+import { badRequest, conflict, forbidden, notFound } from "@/lib/errors";
 import crypto from "crypto";
 
 class SiteService {
@@ -29,6 +29,16 @@ class SiteService {
             throw badRequest(validation.error.issues[0].message);
         }
         return validation.data;
+    }
+
+    // Normalise l'URL pour éviter les doublons (lowercase, remove trailing slash)
+    private normalizeUrl(url: string): string {
+        let normalized = url.trim().toLowerCase();
+        // Retire le slash final s'il existe
+        if (normalized.endsWith('/')) {
+            normalized = normalized.slice(0, -1);
+        }
+        return normalized;
     }
 
     // Vérifie la limite de sites pour un utilisateur
@@ -73,38 +83,60 @@ class SiteService {
     // Crée un nouveau site
     async createSite(userId: string, data: { name: string; url: string }) {
         const validatedData = this.validateSiteData(data);
+        const normalizedUrl = this.normalizeUrl(validatedData.url);
+
         await this.checkSiteLimit(userId);
         const siteKey = this.generateSiteKey();
 
-        const site = await prisma.site.create({
-            data: {
-                name: validatedData.name,
-                url: validatedData.url,
-                siteKey,
-                userId
-            },
-        });
+        try {
+            const site = await prisma.site.create({
+                data: {
+                    name: validatedData.name,
+                    url: normalizedUrl,
+                    siteKey,
+                    userId
+                },
+            });
 
-        return site;
+            return site;
+        } catch (error: any) {
+            // violation de l"unicité du champ url
+            if (error.code === 'P2002' && error.meta?.target?.includes('url')) {
+                throw conflict("Ce site est déjà enregistré par un autre utilisateur.");
+            }
+            throw error;
+        }
     }
 
     // Met à jour un site
     async updateSite(siteId: string, userId: string, data: { name?: string; url?: string }) {
         const validatedName = data.name ? this.validateSiteName(data.name) : undefined;
-        const validatedUrl = data.url ? this.validateSiteUrl(data.url) : undefined;
+        let normalizedUrl = undefined;
+
+        if (data.url) {
+            const validatedUrl = this.validateSiteUrl(data.url);
+            normalizedUrl = this.normalizeUrl(validatedUrl);
+        }
 
         const site = await this.getSiteOrThrow(siteId);
         this.verifyOwnership(site, userId);
 
-        const updated = await prisma.site.update({
-            where: { id: siteId },
-            data: {
-                ...(validatedName && { name: validatedName }),
-                ...(validatedUrl && { url: validatedUrl }),
-            },
-        });
+        try {
+            const updated = await prisma.site.update({
+                where: { id: siteId },
+                data: {
+                    ...(validatedName && { name: validatedName }),
+                    ...(normalizedUrl && { url: normalizedUrl }),
+                },
+            });
 
-        return updated;
+            return updated;
+        } catch (error: any) {
+            if (error.code === 'P2002' && error.meta?.target?.includes('url')) {
+                throw conflict("Cette URL est déjà utilisée par un autre site.");
+            }
+            throw error;
+        }
     }
 
     // Supprime un site
