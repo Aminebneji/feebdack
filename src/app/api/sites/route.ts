@@ -31,13 +31,13 @@ export async function PATCH(req: Request) {
     try {
         const userId = await authService.getCurrentUserId();
         const body = await req.json();
-        const { id, name, url } = body;
+        const { id, name, url, brandColor } = body;
 
         if (!id) {
             throw badRequest("ID required");
         }
 
-        const updated = await siteService.updateSite(id, userId, { name, url });
+        const updated = await siteService.updateSite(id, userId, { name, url, brandColor });
         return NextResponse.json(updated);
     } catch (error) {
         return handleError(error);

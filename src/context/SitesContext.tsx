@@ -9,6 +9,7 @@ interface Site {
     name: string;
     url: string;
     siteKey: string;
+    brandColor?: string;
     createdAt: string;
 }
 

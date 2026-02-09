@@ -33,12 +33,13 @@ export default function SiteDashboard() {
     const [view, setView] = useState<"kanban" | "settings">("kanban");
     const [loading, setLoading] = useState(true);
     const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+    const siteKey = site?.siteKey;
 
     const fetchFeedbacks = useCallback(async () => {
-        if (!site) return;
+        if (!siteKey) return;
         setLoading(true);
         try {
-            const feedbacksRes = await fetch(`/api/feedbacks?siteKey=${site.siteKey}`);
+            const feedbacksRes = await fetch(`/api/feedbacks?siteKey=${siteKey}`);
             const shouldUpdateFeedbacks = feedbacksRes.ok;
 
             if (shouldUpdateFeedbacks) {
@@ -48,12 +49,11 @@ export default function SiteDashboard() {
         } finally {
             setLoading(false);
         }
-    }, [site]);
+    }, [siteKey]);
 
     useEffect(() => {
-        const shouldFetch = !!site;
-        if (shouldFetch) fetchFeedbacks();
-    }, [site, fetchFeedbacks]);
+        if (siteKey) fetchFeedbacks();
+    }, [siteKey, fetchFeedbacks]);
 
     useEffect(() => {
         const off = eventEmitter.on(EVENTS.FEEDBACK_CHANGED, () => {

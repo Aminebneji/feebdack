@@ -2,7 +2,7 @@
   const SCRIPT_ID = 'feebdack-widget-script';
   const script = document.currentScript || document.getElementById(SCRIPT_ID);
   const SITE_KEY = script ? script.getAttribute('data-site-key') : null;
-  // Dynamic API URL based on where the unknown script is hosted
+  // API URL dynamique basée sur l'URL du script
   const getApiUrl = () => {
     if (!script) return 'http://localhost:3000/api/feedbacks';
     try {
@@ -25,13 +25,30 @@
 
   const API_URL = getApiUrl();
   const ASSETS_URL = getAssetsUrl();
+  const CONFIG_URL = `${API_URL.replace('/feedbacks', '/public/config')}?siteKey=${SITE_KEY}`;
+  
+  // Default color
+  let config = {
+      brandColor: "#164C3A"
+  };
+
+  const fetchConfig = async () => {
+      try {
+          const res = await fetch(CONFIG_URL);
+          if (res.ok) {
+              const data = await res.json();
+              if (data.brandColor) config.brandColor = data.brandColor;
+          }
+      } catch (error) {
+          console.error("Feebdack config error", error);
+      }
+  };
   
   if (!SITE_KEY) {
     console.error('Feebdack: Missing data-site-key attribute');
     return;
   }
 
-  // Inject Styles
   const styles = `
     :host {
       all: initial;
@@ -47,8 +64,8 @@
       width: 56px;
       height: 56px;
       border-radius: 16px;
-      background: #164C3A;
-      color: white;
+      background: var(--brand-color, #164C3A);
+      color: var(--text-color, white);
       border: none;
       box-shadow: 0 4px 12px rgba(22, 76, 58, 0.3);
       cursor: pointer;
@@ -59,8 +76,8 @@
     }
     #feebdack-button:hover {
       transform: scale(1.05) translateY(-2px);
-      background: #0d2e23;
-      box-shadow: 0 6px 16px rgba(22, 76, 58, 0.4);
+      filter: brightness(1.1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
     }
     #feebdack-modal {
       position: fixed;
@@ -82,8 +99,8 @@
     }
     .feebdack-header {
       padding: 20px;
-      background: #164C3A;
-      color: white;
+      background: var(--brand-color, #164C3A);
+      color: var(--text-color, white);
       display: flex;
       align-items: center;
       gap: 12px;
@@ -96,8 +113,8 @@
     .feebdack-header a:hover {
       opacity: 0.8;
     }
-    .feebdack-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: white !important; }
-    .feebdack-header p { margin: 4px 0 0; font-size: 12px; opacity: 0.8; color: white !important; }
+    .feebdack-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--text-color, white) !important; }
+    .feebdack-header p { margin: 4px 0 0; font-size: 12px; opacity: 0.8; color: var(--text-color, white) !important; }
     .feebdack-body { padding: 20px; background: white; }
     .feebdack-field { margin-bottom: 16px; }
     .feebdack-field label { display: block; font-size: 12px; font-weight: 600; color: #64748b !important; margin-bottom: 6px; text-transform: uppercase; }
@@ -118,11 +135,11 @@
       color: #94a3b8 !important;
       opacity: 1;
     }
-    .feebdack-input:focus { border-color: #164C3A; }
+    .feebdack-input:focus { border-color: var(--brand-color, #164C3A); }
     .feebdack-submit {
       width: 100%;
       padding: 12px;
-      background: #164C3A;
+      background: var(--brand-color, #164C3A);
       color: white !important;
       border: none;
       border-radius: 8px;
@@ -131,7 +148,7 @@
       transition: background 0.2s;
       font-family: inherit;
     }
-    .feebdack-submit:hover { background: #0d2e23; }
+    .feebdack-submit:hover { filter: brightness(1.1); }
     .feebdack-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     .feebdack-success {
       display: none;
@@ -141,26 +158,24 @@
     }
     .feebdack-success h4 { margin: 0 0 8px; color: #0f172a !important; }
     .feebdack-success p { margin: 0; font-size: 14px; color: #64748b !important; }
-    .feebdack-success-icon {
-      width: 48px;
-      height: 48px;
-      background: #dcfce7;
-      color: #166534 !important;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 24px;
-    }
+       height: 48px;
+       background: #f8fafc;
+       color: var(--brand-color, #164C3A) !important;
+       border-radius: 50%;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       margin: 0 auto 16px;
+       font-size: 24px;
+     }
   `;
 
-  // Create Container with Shadow DOM
+  // Container avec Shadow DOM
   const container = document.createElement('div');
   container.id = 'feebdack-widget-root';
   const shadow = container.attachShadow({ mode: 'open' });
 
-  // Inject Styles into Shadow DOM
+  // Styles dans Shadow DOM
   const styleSheet = document.createElement("style");
   styleSheet.innerText = styles;
   shadow.appendChild(styleSheet);
@@ -207,12 +222,28 @@
   shadow.appendChild(widgetContent);
   document.body.appendChild(container);
 
-  // Logic - Query elements from Shadow Root
+  // Logique
   const button = shadow.getElementById('feebdack-button');
   const modal = shadow.getElementById('feebdack-modal');
   const submitBtn = shadow.getElementById('feebdack-submit-btn');
   const formView = shadow.getElementById('feebdack-form-view');
   const successView = shadow.getElementById('feebdack-success-view');
+
+  const resetForm = () => {
+    shadow.getElementById('feebdack-name').value = '';
+    shadow.getElementById('feebdack-feature').value = '';
+    shadow.getElementById('feebdack-content').value = '';
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Envoyer';
+    formView.style.display = 'block';
+    successView.style.display = 'none';
+  };
+
+  document.addEventListener('click', (event) => {
+    if (modal.style.display === 'flex' && !container.contains(event.target)) {
+      modal.style.display = 'none';
+    }
+  });
 
   button.addEventListener('click', () => {
     const isVisible = modal.style.display === 'flex';
@@ -250,6 +281,7 @@
         successView.style.display = 'block';
         setTimeout(() => {
           modal.style.display = 'none';
+          resetForm();
         }, 3000);
       } else {
         throw new Error('Erreur lors de l\'envoi');
@@ -260,4 +292,35 @@
       submitBtn.innerText = 'Envoyer';
     }
   });
+  
+  const getContrast = (color) => {
+    let r, g, b;
+    
+    if (color.startsWith('#')) {
+        const hex = color.replace("#", "");
+        r = parseInt(hex.substr(0, 2), 16);
+        g = parseInt(hex.substr(2, 2), 16);
+        b = parseInt(hex.substr(4, 2), 16);
+    } else if (color.startsWith('rgb')) {
+        const values = color.substring(color.indexOf('(') + 1, color.lastIndexOf(')')).split(',');
+        r = parseInt(values[0]);
+        g = parseInt(values[1]);
+        b = parseInt(values[2]);
+    } else {
+        return 'white';
+    }
+
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? 'black' : 'white';
+  }
+  
+  const init = async () => {
+      await fetchConfig();
+      const textColor = getContrast(config.brandColor);
+      container.style.setProperty('--brand-color', config.brandColor);
+      container.style.setProperty('--text-color', textColor);
+  };
+
+  init();
+
 })();

@@ -81,7 +81,7 @@ class SiteService {
     }
 
     // Crée un nouveau site
-    async createSite(userId: string, data: { name: string; url: string }) {
+    async createSite(userId: string, data: { name: string; url: string; brandColor?: string }) {
         const validatedData = this.validateSiteData(data);
         const normalizedUrl = this.normalizeUrl(validatedData.url);
 
@@ -94,7 +94,8 @@ class SiteService {
                     name: validatedData.name,
                     url: normalizedUrl,
                     siteKey,
-                    userId
+                    userId,
+                    brandColor: data.brandColor
                 },
             });
 
@@ -109,7 +110,7 @@ class SiteService {
     }
 
     // Met à jour un site
-    async updateSite(siteId: string, userId: string, data: { name?: string; url?: string }) {
+    async updateSite(siteId: string, userId: string, data: { name?: string; url?: string; brandColor?: string }) {
         const validatedName = data.name ? this.validateSiteName(data.name) : undefined;
         let normalizedUrl = undefined;
 
@@ -127,6 +128,7 @@ class SiteService {
                 data: {
                     ...(validatedName && { name: validatedName }),
                     ...(normalizedUrl && { url: normalizedUrl }),
+                    ...(data.brandColor && { brandColor: data.brandColor }),
                 },
             });
 

@@ -12,6 +12,7 @@ model Site {
   name      String
   url       String     @unique
   siteKey   String     @unique
+  brandColor String    @default("#164C3A")
   userId    String
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   feedbacks Feedback[]

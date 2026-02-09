@@ -11,6 +11,7 @@ interface Site {
     name: string;
     url: string;
     siteKey: string;
+    brandColor?: string;
     createdAt: string;
 }
 
@@ -19,9 +20,41 @@ interface SettingsViewProps {
 }
 
 export function SettingsView({ site }: SettingsViewProps) {
-    const { success, loading: toastLoading, dismiss } = useToast();
-    const { deleteSite } = useSites();
+    const { success, loading: toastLoading, dismiss, error } = useToast();
+    const { deleteSite, updateSite } = useSites();
     const [copied, setCopied] = useState(false);
+    const [color, setColor] = useState(site.brandColor || "#164C3A");
+    const [isSavingColor, setIsSavingColor] = useState(false);
+
+    const handleColorChange = (newColor: string) => {
+        setColor(newColor);
+    };
+
+    const saveColor = async () => {
+        if (color === site.brandColor) return;
+
+        setIsSavingColor(true);
+        try {
+            const res = await fetch("/api/sites", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: site.id, brandColor: color }),
+            });
+
+            if (res.ok) {
+                const updated = await res.json();
+                updateSite(updated);
+                success("Couleur mise à jour");
+            } else {
+                error("Erreur lors de la mise à jour");
+            }
+        } catch (err) {
+            console.error(err);
+            error("Erreur réseau");
+        } finally {
+            setIsSavingColor(false);
+        }
+    };
 
     const handleDelete = async (id: string, event: React.MouseEvent) => {
         event.preventDefault();
@@ -66,6 +99,30 @@ export function SettingsView({ site }: SettingsViewProps) {
                             <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-4">URL du Site</label>
                             <div className="h-10 rounded-xl border-2 border-zinc-50 bg-zinc-50/50 text-sm font-bold px-4 flex items-center shadow-inner">
                                 {site.url}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Customization */}
+                <Card className="border-2 border-zinc-100 bg-white shadow-xl shadow-primary/5 rounded-lg overflow-hidden">
+                    <CardContent className="p-6 space-y-4">
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-4">Personnalisation</label>
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <input
+                                        type="color"
+                                        value={color}
+                                        onChange={(e) => handleColorChange(e.target.value)}
+                                        onBlur={saveColor}
+                                        className="w-12 h-12 rounded-xl cursor-pointer border-2 border-zinc-100 p-1 bg-white"
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-zinc-700">Couleur de la marque</span>
+                                    <span className="text-xs text-zinc-400">Cette couleur sera appliquée à votre widget</span>
+                                </div>
                             </div>
                         </div>
                     </CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { Lock, Mail, ArrowRight, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function LoginPage() {
     return (
@@ -25,11 +26,21 @@ export default function LoginPage() {
 function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
     const searchParams = useSearchParams();
     const registered = searchParams?.get("registered");
+
+    //le remember me
+    useEffect(() => {
+        const savedEmail = localStorage.getItem("feebdack-email");
+        if (savedEmail) {
+            setEmail(savedEmail);
+            setRememberMe(true);
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,6 +48,13 @@ function LoginForm() {
         setError("");
 
         try {
+            // le remember me
+            if (rememberMe) {
+                localStorage.setItem("feebdack-email", email);
+            } else {
+                localStorage.removeItem("feebdack-email");
+            }
+
             const result = await signIn("credentials", {
                 redirect: false,
                 email,
@@ -85,6 +103,7 @@ function LoginForm() {
                                             onChange={(e) => setEmail(e.target.value)}
                                             className="pl-12 h-14 bg-zinc-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl font-bold transition-all shadow-inner"
                                             placeholder="john.doe@example.com"
+                                            autoComplete="username"
                                             required
                                         />
                                     </div>
@@ -100,9 +119,24 @@ function LoginForm() {
                                             onChange={(e) => setPassword(e.target.value)}
                                             className="pl-12 h-14 bg-zinc-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl font-bold transition-all shadow-inner"
                                             placeholder="••••••••"
+                                            autoComplete="current-password"
                                             required
                                         />
                                     </div>
+                                </div>
+
+                                <div className="flex items-center space-x-3 ml-1">
+                                    <Checkbox
+                                        id="remember-me"
+                                        checked={rememberMe}
+                                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                                    />
+                                    <label
+                                        htmlFor="remember-me"
+                                        className="text-xs font-bold text-zinc-600 cursor-pointer select-none"
+                                    >
+                                        Se souvenir de moi
+                                    </label>
                                 </div>
                             </div>
 
